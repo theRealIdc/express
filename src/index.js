@@ -5,7 +5,12 @@ const app = express()
 const PORT = process.env.PORT || 3000
 app.use(express.json())
 const data = [
-
+    {
+        id: 1,
+        name: "idc",
+        first_name: "idc",
+        age: 21
+    }
 ]
 let id = 1
 //create users 
@@ -36,7 +41,8 @@ app.put('/api/user/:id', (req, res) => {
 })
 
 //Get users
-app.get('/users', (req, res) => {
+app.get('/api/users', (req, res) => {
+    console.log(req.query)
     return res.status(200).send(data)
 })
 
