@@ -1,29 +1,34 @@
 import express from 'express'
-
+import { query, body, validationResult } from 'express-validator'
 const app = express()
 
 const PORT = process.env.PORT || 3000
 app.use(express.json())
 const data = [
-    {
-        id: 1,
-        name: "idc",
-        first_name: "idc",
-        age: 21
-    }
+
 ]
 let id = 1
 //create users 
-app.post('/api/user', (req, res) => {
-    const { name, first_name } = req.body
+app.post('/api/user',
+    body('email')
+        .isEmail()
+        .notEmpty()
+        .withMessage('Email not be empty'),
+    (req, res) => {
+        const result = validationResult(req)
+        console.log("result:::::::::::", result)
+        if (!result.isEmpty())
+            return res.status(400).send({ errors: result.array() })
 
-    data.push({
-        id: id++,
-        name: name,
-        first_name: first_name
+        const { name, first_name, email } = req.body
+        data.push({
+            id: id++,
+            name: name,
+            first_name: first_name,
+            email: email
+        })
+        return res.status(201).send(data)
     })
-    return res.status(201).send(data)
-})
 //update user
 app.put('/api/user/:id', (req, res) => {
     const oneUser = data.find(e => e.id === parseInt(req.params.id))
