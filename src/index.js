@@ -1,5 +1,7 @@
 import express from 'express'
-import { query, body, validationResult } from 'express-validator'
+import { query, body, validationResult, matchedData, checkSchema } from 'express-validator'
+import { createUserValidationsSchema } from './utils/validationSchema.mjs'
+
 const app = express()
 
 const PORT = process.env.PORT || 3000
@@ -10,22 +12,24 @@ const data = [
 let id = 1
 //create users 
 app.post('/api/user',
-    body('email')
-        .isEmail()
-        .notEmpty()
-        .withMessage('Email not be empty'),
+    checkSchema(createUserValidationsSchema),
     (req, res) => {
         const result = validationResult(req)
         console.log("result:::::::::::", result)
         if (!result.isEmpty())
             return res.status(400).send({ errors: result.array() })
-
-        const { name, first_name, email } = req.body
+        const data2 = matchedData(req)
+        console.log('DATA::::', data2.age)
+        if (data2.age < 0) {
+            return res.status(400).send('Age must be a number')
+        }
+        const { name, first_name, email, age } = req.body
         data.push({
             id: id++,
             name: name,
             first_name: first_name,
-            email: email
+            email: email,
+            age: age
         })
         return res.status(201).send(data)
     })
