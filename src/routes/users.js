@@ -27,12 +27,22 @@ router.post('/api/create/user', checkSchema(createUserValidationsSchema), (req, 
         email: email,
         age: age
     })
+    console.log("signed cookie", req.signedCookies.hello)
+    res.cookie('hello', 'world', { maxAge: 60000 * 60, signed: true })
     return res.status(201).send(data)
 })
 
 //Get All users
 router.get('/api/getAllUsers/', (req, res) => {
-    return res.status(200).send(data)
+
+
+    if (req.signedCookies && req.signedCookies.hello === 'world') {
+        console.log('cookie::::', req.cookies)
+
+        return res.status(200).send(data)
+    }
+
+    return res.status(403).send({ "msg": "Sorry. You need the correct cookie" })
 })
 export default router
 
