@@ -8,6 +8,15 @@ const data = [
 
 ]
 let id = 1
+//Home
+router.get('/api', (req, res) => {
+    console.log('session: ', req.session)
+    console.log('session ID: ', req.session.id)
+    console.log("signed cookie", req.signedCookies.hello)
+    req.session.visited = true
+    res.cookie('hello', 'world', { maxAge: 60000 * 60, signed: true }, 'session', req.session.id, { maxAge: req.session.cookie.expires })
+    res.status(200).send('Home')
+})
 //create users 
 router.post('/api/create/user', checkSchema(createUserValidationsSchema), (req, res) => {
     const result = validationResult(req)
@@ -27,14 +36,14 @@ router.post('/api/create/user', checkSchema(createUserValidationsSchema), (req, 
         email: email,
         age: age
     })
-    console.log("signed cookie", req.signedCookies.hello)
-    res.cookie('hello', 'world', { maxAge: 60000 * 60, signed: true })
+
     return res.status(201).send(data)
 })
 
 //Get All users
 router.get('/api/getAllUsers/', (req, res) => {
-
+    console.log('session: ', req.session)
+    console.log('session ID: ', req.session.id)
 
     if (req.signedCookies && req.signedCookies.hello === 'world') {
         console.log('cookie::::', req.cookies)
