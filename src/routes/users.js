@@ -13,14 +13,56 @@ router.get('/api', (req, res) => {
     console.log('session: ', req.session)
     console.log('session ID: ', req.session.id)
     console.log("signed cookie", req.signedCookies.hello)
-    req.session.visited = true
-    res.cookie('hello', 'world', { maxAge: 60000 * 60, signed: true }, 'session', req.session.id, { maxAge: req.session.cookie.expires })
+
+    //req.session.visited = true
+    res.cookie('hello', 'world', { maxAge: 60000 * 60, signed: true }) //'session', req.session.id, { maxAge: req.session.cookie.expires })
     res.status(200).send('Home')
+})
+
+//Cart
+router.post('/api/cart', (req, res) => {
+    if (!req.session.user) return res.sendStatus(401)
+    const { body: item } = req
+    const { cart } = req.session
+
+    if (cart) {
+        cart.push(item)
+    } else {
+        req.session.cart = [item]
+    }
+    return res.status(201).send(item);
+})
+
+router.get('/api/cart', (req, res) => {
+    if (!req.session.user) return res.sendStatus(401)
+    return res.status(200).send(req.session.cart ?? [])
+})
+
+//Auth
+router.post('/api/auth/', (req, res) => {
+    const { name, password } = req.body
+    const findUser = data.find(user => user.name === name)
+
+    if (!findUser || findUser.password !== password)
+        return res.status(401).send({ msg: "BAD CREDENTIALS" })
+    req.session.user = findUser
+    return res.status(200).send(findUser)
+
+})
+
+// status
+router.get('/api/auth/status', (req, res) => {
+    console.log(req.session.id)
+    req.sessionStore.get(req.sessionID, (err, session) => {
+        console.log(session)
+    })
+    return req.session.user
+        ? res.status(200).send(req.session.user)
+        : res.status(401).send("Not Authenticated")
 })
 //create users 
 router.post('/api/create/user', checkSchema(createUserValidationsSchema), (req, res) => {
     const result = validationResult(req)
-    console.log("result:::::::::::", result)
     if (!result.isEmpty())
         return res.status(400).send({ errors: result.array() })
     const data2 = matchedData(req)
@@ -28,12 +70,13 @@ router.post('/api/create/user', checkSchema(createUserValidationsSchema), (req, 
     if (data2.age < 0) {
         return res.status(400).send('Age must be a number')
     }
-    const { name, first_name, email, age } = req.body
+    const { name, first_name, password, email, age } = req.body
     data.push({
         id: id++,
         name: name,
         first_name: first_name,
         email: email,
+        password: password,
         age: age
     })
 
